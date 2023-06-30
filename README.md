@@ -32,7 +32,7 @@ To run the game locally, follow these steps:
 
 ## Dependencies
 
-This game project does not have any external dependencies. It is implemented using vanilla JavaScript and HTML5 canvas.
+This game project does not have any external dependencies. It is implemented using  JavaScript and HTML5 canvas.
 
 ## License
 
