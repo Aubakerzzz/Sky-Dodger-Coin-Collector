@@ -34,10 +34,6 @@ To run the game locally, follow these steps:
 
 This game project does not have any external dependencies. It is implemented using  JavaScript and HTML5 canvas.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
 ## Acknowledgements
 
 This game project was created using the guidance and support from various online resources and tutorials. We would like to acknowledge the following sources:
@@ -45,9 +41,6 @@ This game project was created using the guidance and support from various online
 - [W3Schools](https://www.w3schools.com/)
 - [MDN Web Docs](https://developer.mozilla.org/)
 - [Stack Overflow](https://stackoverflow.com/)
-
-We express our gratitude to these resources for their valuable contributions to the development community.
-
 ## Authors
 
 - [Abubaker](https://github.com/Aubakerzzz) - Lead Developer
