@@ -1,0 +1,9 @@
+canvas {
+  background-image: url('back.jpg');
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #d3d3d3;
+  /* background: linear-gradient(45deg, #2e1a1a, #4f2727, #743939, #994d4d, #bf6363, #e68080, #ffb3b3, #ff69b4, #008000, #daa520, #000000); */
+}

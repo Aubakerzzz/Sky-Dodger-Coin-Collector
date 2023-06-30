@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="ww.css">
+    <script src="ss.js"></script>
+  </head>
+  <body onload="startGame()" onkeydown="handleKeyDown(event)" onkeyup="handleKeyUp(event)">
+    <script>
+      function component(width, height, color, x, y, type) {
+        this.type = type;
+        this.score = 0;
+        this.width = width;
+        this.height = height;
+        this.speedX = 0;
+        this.speedY = 0;
+        this.x = x;
+        this.y = y;
+        this.gravity = 0;
+        this.gravitySpeed = 0;
+        this.visible = true; // Added visible property
+        this.update = function() {
+          ctx = myGameArea.context;
+          if (!this.visible) {
+            return; // Skip rendering if not visible
+          }
+          if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+          } else if (this.type == "image") {
+            ctx.drawImage(rodImage, this.x, this.y, this.width, this.height);
+          } else if(this.type == "image1"){
+            ctx.drawImage(coinImage, this.x, this.y, this.width, this.height);
+          } else if (this.type == "bonus") {  
+            ctx.drawImage(bonusImage, this.x, this.y, this.width, this.height)
+          } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+          }
+        };
+        this.newPos = function() {
+          this.gravitySpeed += this.gravity;
+          this.gravitySpeed += acceleration;
+          this.x += this.speedX;
+          this.y += this.speedY + this.gravitySpeed;
+          this.hitBottom();
+          this.checkBoundaries(); // Added check for boundaries
+        };
+        this.hitBottom = function() {
+          var rockbottom = myGameArea.canvas.height - this.height;
+          if (this.y > rockbottom) {
+            this.y = rockbottom;
+            this.gravitySpeed = 0;
+          }
+        };
+        this.checkBoundaries = function() {
+          if (this.x < 0) {
+            this.x = 0;
+          }
+          if (this.x + this.width > myGameArea.canvas.width) {
+            this.x = myGameArea.canvas.width - this.width;
+          }
+          if (this.y < 0) {
+            this.y = 0;
+          }
+          if (this.y + this.height > myGameArea.canvas.height) {
+            this.y = myGameArea.canvas.height - this.height;
+          }
+        };
+        this.crashWith = function(otherobj) {
+          if (!otherobj.visible) {
+            return false; // Skip collision check if the object is not visible
+          }
+          var myleft = this.x;
+          var myright = this.x + this.width;
+          var mytop = this.y;
+          var mybottom = this.y + this.height;
+          var otherleft = otherobj.x;
+          var otherright = otherobj.x + otherobj.width;
+          var othertop = otherobj.y;
+          var otherbottom = otherobj.y + otherobj.height;
+          var crash = true;
+          if (
+            mybottom < othertop - 10 ||
+            mytop > otherbottom - 10 ||
+            myright < otherleft - 10 ||
+            myleft > otherright - 10
+          ) {
+            crash = false;
+          }
+          return crash;
+        };
+      }
+
+      function updateGameArea() {
+        
+        var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+        for (i = 0; i < myObstacles.length; i += 1) {
+          if (myGamePiece.crashWith(myObstacles[i])) {
+            if (myObstacles[i].type === "image1") {
+              myObstacles[i].visible = false; // Make the coin image invisible
+              myGamePiece.score += 5; // Add 5 to the score
+              playCoinSound();
+            } else if(myObstacles[i].type === "bonus") {
+                myObstacles[i].visible = false;
+                myGamePiece.score += 20;
+                playBonusSound();
+            } else {
+              
+              gameOver();
+              // Play the game over sound
+              playGameOverSound();
+              return;
+            }
+          }
+        }
+        myGameArea.clear();
+        myGameArea.frameNo += 1;
+        if (myGameArea.frameNo == 1 || everyinterval(150)) {
+          x = myGameArea.canvas.width;
+          minHeight = Math.floor(myGameArea.canvas.height * rodHeightPercentage * 0.2);
+          maxHeight = Math.floor(myGameArea.canvas.height * rodHeightPercentage);
+          height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+          minGap = height * 3;
+          maxGap = height * 6;
+          gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+          
+          // Calculate the available space for the coin
+          var availableSpace = myGameArea.canvas.height - height - gap;
+          
+          // Calculate the y-position of the coin randomly within the available space
+          var coinY = Math.floor(Math.random() * (availableSpace - 10 + 1) + 10);
+          
+          var obstacleX = x;
+          var coinPos = x + 20; 
+          var obstacleTop = new component(10, height, "transparent", obstacleX, 0, "image");
+          var obstacleBottom = new component(10, myGameArea.canvas.height - height - gap, "transparent", obstacleX, height + gap, "image");
+          var coin = new component(20, 20, "coin.png", coinPos, coinY, "image1"); // Assuming the coin image is named "coin.png"
+          var bonus = new component(20, 20, "bonus.png", coinPos + 5, coinY - 50, "bonus"); // Assuming the coin image is named "coin.png"
+          
+          myObstacles.push(obstacleTop);
+          myObstacles.push(obstacleBottom);
+          myObstacles.push(coin);
+        }
+            // Add a timeout to add the bonus after 10 seconds
+      if (myGameArea.frameNo === 1) {
+        setTimeout(function () {
+          bonus = new component(20, 20, "bonus.png", coinPos + 5, coinY - 50, "bonus"); // Assuming the bonus image is named "bonus.png"
+          myObstacles.push(bonus);
+        }, 10000); // 10 seconds delay
+      }
+  
+        for (i = 0; i < myObstacles.length; i += 1) {
+        
+            if(myGamePiece.score < 20 ) {
+               myObstacles[i].x += -1;
+            } else if (myGamePiece.score >= 20 && myGamePiece.score < 35) {
+              myObstacles[i].x += -2;
+            } else if (myGamePiece.score >= 35 && myGamePiece.score < 50) {
+              myObstacles[i].x += -3;
+            }
+            else {
+              myObstacles[i].x += -4;
+            }
+            myObstacles[i].update();
+        
+        }
+        myScore.text = "SCORE: " + myGamePiece.score;
+        myScore.update();
+        myGamePiece.newPos();
+        myGamePiece.update();
+
+      }
+      
+      function everyinterval(n) {
+        return (myGameArea.frameNo / n) % 1 === 0;
+      }
+      
+      function handleKeyDown(event) {
+        if (event.keyCode === 38) {
+          // Up arrow key
+          acceleration = -0.2;
+        } else if (event.keyCode === 40) {
+          // Down arrow key
+          acceleration = 0.2;
+        }
+      }
+      
+      function handleKeyUp(event) {
+        if (event.keyCode === 38 || event.keyCode === 40) {
+          acceleration = 0;
+        }
+      }
+      window.addEventListener("resize", function () {
+        myGameArea.start();
+      });
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+      startGame();
+    </script>
+  </body>
+</html>
